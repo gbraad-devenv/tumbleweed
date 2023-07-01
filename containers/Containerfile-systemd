@@ -1,0 +1,10 @@
+FROM ghcr.io/gbraad-devenv/tumbleweed/dotfiles:latest
+
+USER root
+
+RUN zypper install -y \
+        dbus-1 systemd-sysvinit \
+    && zypper clean -a
+
+ENTRYPOINT ["/sbin/init"]
+CMD ["/sbin/init"]

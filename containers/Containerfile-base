@@ -1,0 +1,40 @@
+FROM registry.opensuse.org/opensuse/tumbleweed:latest
+
+# essential packages
+RUN zypper install -y \
+        sudo shadow zsh stow curl \
+    && zypper clean -a
+
+# Add user with the expected ID (automated setup does not work atm)
+RUN groupadd wheel \
+    && useradd -l -u 1000 -G wheel -md /home/gbraad -s /usr/bin/zsh -p gbraad gbraad \
+    && echo '%wheel ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel
+
+# install tailscale
+RUN zypper --non-interactive addrepo --no-gpgcheck \
+        https://pkgs.tailscale.com/stable/opensuse/leap/15.5/tailscale.repo \
+    && zypper refresh \
+    && zypper install -y \
+        tailscale \
+    && zypper clean -a
+
+RUN zypper install -y \
+        mc vim tmux screen links lynx \
+    && zypper clean -a
+
+# powerline
+RUN zypper install -y \
+        powerline\
+    && zypper clean -a
+
+RUN zypper --non-interactive addrepo --no-gpgcheck \
+        https://cli.github.com/packages/rpm/gh-cli.repo \
+    && zypper refresh \
+    && zypper install -y \
+        gh \
+    && zypper clean -a
+
+COPY scripts/tailscaled /etc/init.d/tailscaled
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+
+USER gbraad
